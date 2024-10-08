@@ -6,29 +6,52 @@ declare(strict_types=1);
 
 namespace App;
 
-use ModelflowAi\Core\AIRequestHandlerInterface;
-use ModelflowAi\Core\Request\Builder\AIChatRequestBuilder;
-use ModelflowAi\Core\Request\Criteria\FeatureCriteria;
-use ModelflowAi\Core\Request\Criteria\PrivacyCriteria;
-use ModelflowAi\Core\Request\Message\AIChatMessage;
-use ModelflowAi\Core\Request\Message\AIChatMessageRoleEnum;
-use ModelflowAi\Core\Request\Message\ToolCallsPart;
-use ModelflowAi\Core\ToolInfo\ToolChoiceEnum;
-use ModelflowAi\Core\ToolInfo\ToolExecutor;
+use ModelflowAi\Chat\AIChatRequestHandlerInterface;
+use ModelflowAi\Chat\Request\Builder\AIChatRequestBuilder;
+use ModelflowAi\Chat\Request\Message\AIChatMessage;
+use ModelflowAi\Chat\Request\Message\AIChatMessageRoleEnum;
+use ModelflowAi\Chat\Request\Message\ToolCallsPart;
+use ModelflowAi\Chat\ToolInfo\ToolChoiceEnum;
+use ModelflowAi\Chat\ToolInfo\ToolExecutor;
+use ModelflowAi\DecisionTree\Criteria\FeatureCriteria;
+use ModelflowAi\DecisionTree\Criteria\PrivacyCriteria;
 
-/** @var AIRequestHandlerInterface $handler */
+/** @var AIChatRequestHandlerInterface $handler */
 $handler = require_once __DIR__ . '/../src/bootstrap.php';
 
 $toolExecutor = new ToolExecutor();
 
 /** @var AIChatRequestBuilder $builder */
-$builder = $handler->createChatRequest()
-    ->addUserMessage('How is the weather in Paris?')
-    ->tool('get_current_weather', new WeatherTool(), 'getCurrentWeather')
-    ->toolChoice(ToolChoiceEnum::AUTO)
-//    ->addCriteria(ProviderCriteria::OLLAMA)
-    ->addCriteria(PrivacyCriteria::HIGH)
-    ->addCriteria(FeatureCriteria::TOOLS);
+$builder = $handler->createRequest()
+    ->addUserMessage('Create a data mapping to the input data format into the output data format from the step named "fastmap".')
+    ->tool('get_step_input_format', new StructureTool(), 'getStepInput')
+    ->tool('get_step_output_format', new StructureTool(), 'getStepOutput')
+    ->addSystemMessage(<<<PROMPT
+        The response should be in JSON. All data mapping should be following this JSON schema:
+        {
+          "type": "object",
+          "properties": {
+            "map": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "field": {"type": "string", "description": "A path expression, as used by the PHP package Symfony Property Access. The point is being used to navigate against an object's properties, square brackets are used to navigate through an array's items."},
+                  "copy": {"type": "string", "description": "A path expression, as used by the PHP package Symfony Property Access. The point is being used to navigate against an object's properties, square brackets are used to navigate through an array's items. This field should only be present if the value requires no change."},
+                  "expression": {"type": "string", "description": "An Expression Language formula, as used by the PHP package Symfony Expression Language."},
+                  "constant": {"type": "string", "description": "This field should be present only when there is a constant value to apply in the output"},
+                },
+                "required": ["field"]
+              }
+            }
+          }
+        }
+    PROMPT)
+//    ->toolChoice(ToolChoiceEnum::AUTO)
+    ->addCriteria(ProviderCriteria::MISTRAL)
+//    ->addCriteria(PrivacyCriteria::HIGH)
+    ->addCriteria(FeatureCriteria::TOOLS)
+;
 
 $request = $builder->build();
 $response = $request->execute();

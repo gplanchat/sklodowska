@@ -11,14 +11,11 @@
     "phpstan/phpstan": "^1.10"
   },
   "require": {
-    "modelflow-ai/api-client": "dev-",
-    "modelflow-ai/core": "@dev",
-    "modelflow-ai/mistral": "@dev",
-    "modelflow-ai/ollama": "@dev",
-    "modelflow-ai/ollama-adapter": "@dev",
-    "modelflow-ai/mistral-adapter": "@dev",
-    "modelflow-ai/openai-adapter": "@dev",
-    "symfony/dotenv": "^6 || ^7"
+    "symfony/dotenv": "^6 || ^7",
+    "modelflow-ai/chat": "^0.2.0",
+    "modelflow-ai/mistral-adapter": "^0.2.0",
+    "modelflow-ai/ollama-adapter": "^0.2.0",
+    "modelflow-ai/openai-adapter": "^0.2.0"
   },
   "config": {
     "allow-plugins": {

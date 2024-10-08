@@ -20,7 +20,7 @@ $toolExecutor = new ToolExecutor();
 /** @var AIChatRequestBuilder $builder */
 $builder = $handler->createChatRequest()
     ->addUserMessage('How is the weather in Paris?')
-    ->tool('get_current_weather', new WeatherTool(), 'getCurrentWeather')
+    ->tool('get_current_weather', new StructureTool(), 'getCurrentWeather')
     ->toolChoice(ToolChoiceEnum::AUTO)
     ->addCriteria(ProviderCriteria::MISTRAL)
 
